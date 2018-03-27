@@ -1,43 +1,34 @@
-require('dotenv').config();
-const mongoose = require('mongoose');
-mongoose.Promise = global.Promise;
-mongoose.connect('mongodb://localhost:27017/TodoApp');
-// mongoose.connect(process.env.DB_URI);
+const express = require('express');
+const bodyParser = require('body-parser');
+const cors = require('cors');
+const {mongoose} = require('./db/mongoose');
+const { Todo, User } = require('./model');
 
-// const Todo = mongoose.model('Todo', {
-//   text:       {type: String, required: true, minlength: 1, trim: true},
-//   completed:  {type: Boolean, default: false, required: true},
-//   completeAt: {type: Number, default: null}
-// });
+const port = process.env.PORT || 5001;
+const IP = process.env.IP;
 
-// const newTodo = new Todo({
-//   text: 'Get some Avacadoes',
-//   completed: false,
-//   compleedAt: 4
-// })
+const app = express();
 
-// newTodo.save()
-//   .then(
-//     doc => console.log('Document save success', doc),
-//     err => console.log('Document save failed.')
-//   )
-//   .catch(err => console.log('Error'))
+app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({extended: true}))
+app.use(cors())
 
-const UserSchema = new mongoose.Schema({
-  name: {type: String, required: true},
-  email: {type: String, required: true},
-  age: {type: Number, default: 0}
+app.get('/', (req, res) => {
+  res.send('Express Working')
 })
 
-const User = mongoose.model('User', UserSchema);
+app.post('/todos', (req, res) => {
+  var todo = new Todo({
+    text: req.body.text
+  })
 
-const newUser = new User({
-  name: 'Minny Mannam',
-  email: 'minny.mannam@gmail.com',
+  todo.save()
+    .then(data => res.send(data), err => res.status(400).send(err))
 })
 
-newUser.save()
-  .then(
-    data => console.log('Record Saved', data),
-    err => console.log('Error saving record')
-  )
+
+app.get('*', (req, res) => {
+  res.send('404 Error');
+})
+
+app.listen(port, () => console.log(`Express on port ${port}`));
